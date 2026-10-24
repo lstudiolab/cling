@@ -1,12 +1,12 @@
 # Compiler module guide
 
-Use this guide when extending the compiler:
+The current C++17 bootstrap lives in `src/cling.cpp` to keep the initial language migration straightforward. It contains the lexer, AST model, parser, interpreter, diagnostics, and host-C emitter.
 
-- Add new grammar productions to the parser modules and cover them with valid and invalid source tests.
-- Add AST node data to `ast/`, preserving source spans on nodes and statements.
-- Add type and scope rules to `sema/`; avoid embedding semantic checks in the parser.
-- Add new target-independent operations to `cil/instruction.rs`, implement their lowering and VM behavior, and extend verifier checks as necessary.
-- Keep native host-specific rules inside `native.rs` and the command-line driver in `tools/cling`.
-- Use structured diagnostics with spans rather than panics for invalid user programs.
+When extending the compiler:
 
-When a module becomes difficult to reason about, split it by responsibility and re-export the necessary public types through its `mod.rs`. Don't create empty module stubs or duplicate existing behavior merely to increase the file count.
+- Preserve source spans and report invalid source as diagnostics rather than crashes.
+- Add tests for both valid and invalid programs.
+- Keep source-language behavior distinct from host-specific code generation.
+- Split code into headers and translation units when the boundaries are stable and tests cover the behavior.
+- Do not create empty module stubs merely to mirror another compiler's directory layout.
+- Keep the foundation library in `.cling` source; do not implement user-facing standard-library APIs in C++.
