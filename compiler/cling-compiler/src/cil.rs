@@ -2,7 +2,6 @@
 //! typed stack IR. It is intentionally independent of any native target ISA.
 use std::collections::HashMap;
 use crate::ast::{BinaryOp, Expr, ExprKind, Function, Program, Stmt, UnaryOp};
-use crate::diagnostic::Diagnostic;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Value { Int(i64), Bool(bool), String(String), Void }
@@ -153,7 +152,7 @@ fn execute(f: &CilFunction, args: Vec<Value>, functions: &HashMap<&str, &CilFunc
         match &ins.op {
             Op::Const(v) => stack.push(v.clone()), Op::Load(s) => stack.push(locals[*s].clone()), Op::Store(s) => locals[*s] = pop!(), Op::Pop => { pop!(); },
             Op::Neg => { let a=as_int(pop!())?; stack.push(Value::Int(a.checked_neg().ok_or_else(|| format!("line {}: integer overflow", ins.line))?)); }, Op::Not => { let a=pop!(); stack.push(Value::Bool(!as_bool(a)?)); },
-            Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Rem => { let b=as_int(pop!())?; let a=as_int(pop!())?; let v=match &ins.op { Op::Add=>a.checked_add(b), Op::Sub=>a.checked_sub(b), Op::Mul=>a.checked_mul(b), Op::Div=>if b==0 { return Err(format!("line {}: division by zero", ins.line)); } else { a.checked_div(b) }, Op::Rem=>if b==0 { return Err(format!("line {}: remainder by zero", ins.line)); } else { a.checked_rem(b) } }.ok_or_else(|| format!("line {}: integer overflow", ins.line))?; stack.push(Value::Int(v)); }
+            Op::Add | Op::Sub | Op::Mul | Op::Div | Op::Rem => { let b=as_int(pop!())?; let a=as_int(pop!())?; let v=match &ins.op { Op::Add=>a.checked_add(b), Op::Sub=>a.checked_sub(b), Op::Mul=>a.checked_mul(b), Op::Div=>if b==0 { return Err(format!("line {}: division by zero", ins.line)); } else { a.checked_div(b) }, Op::Rem=>if b==0 { return Err(format!("line {}: remainder by zero", ins.line)); } else { a.checked_rem(b) }, _ => unreachable!("outer match restricts this to arithmetic operators") }.ok_or_else(|| format!("line {}: integer overflow", ins.line))?; stack.push(Value::Int(v)); }
             Op::Eq | Op::Ne => { let b=pop!(); let a=pop!(); let eq=a==b; stack.push(Value::Bool(if matches!(&ins.op, Op::Eq) {eq} else {!eq})); }
             Op::Lt | Op::Le | Op::Gt | Op::Ge => { let b=as_int(pop!())?; let a=as_int(pop!())?; stack.push(Value::Bool(match &ins.op {Op::Lt=>a<b,Op::Le=>a<=b,Op::Gt=>a>b,Op::Ge=>a>=b,_=>false})); }
             Op::And | Op::Or => { let b=as_bool(pop!())?; let a=as_bool(pop!())?; stack.push(Value::Bool(if matches!(&ins.op,Op::And){a&&b}else{a||b})); }
