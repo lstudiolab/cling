@@ -7,39 +7,40 @@
 namespace cling {
 class Expr : public ASTNode {
 public:
- explicit Expr(ASTNodeKind kind, SourceRange range = {}) noexcept : ASTNode(kind, range) {}
+ explicit Expr(ASTNodeKind nodeKind, SourceRange range = {}) noexcept : ASTNode(nodeKind, range) {}
 };
 class IntegerExpr final : public Expr {
 public:
- IntegerExpr(long long value, SourceRange range = {}) : Expr(ASTNodeKind::IntegerExpr, range), value(value) {}
+ IntegerExpr(long long initialValue, SourceRange range = {}) : Expr(ASTNodeKind::IntegerExpr, range), value(initialValue) {}
  long long value;
 };
 class StringExpr final : public Expr {
 public:
- StringExpr(std::string value, SourceRange range = {}) : Expr(ASTNodeKind::StringExpr, range), value(std::move(value)) {}
+ StringExpr(std::string initialValue, SourceRange range = {}) : Expr(ASTNodeKind::StringExpr, range), value(std::move(initialValue)) {}
  std::string value;
 };
 class BooleanExpr final : public Expr {
 public:
- BooleanExpr(bool value, SourceRange range = {}) : Expr(ASTNodeKind::BooleanExpr, range), value(value) {}
+ BooleanExpr(bool initialValue, SourceRange range = {}) : Expr(ASTNodeKind::BooleanExpr, range), value(initialValue) {}
  bool value;
 };
 class NameExpr final : public Expr {
 public:
- NameExpr(std::string name, SourceRange range = {}) : Expr(ASTNodeKind::NameExpr, range), name(std::move(name)) {}
+ NameExpr(std::string identifier, SourceRange range = {}) : Expr(ASTNodeKind::NameExpr, range), name(std::move(identifier)) {}
  std::string name;
 };
 class CallExpr final : public Expr {
 public:
- CallExpr(std::unique_ptr<Expr> callee, std::vector<std::unique_ptr<Expr>> arguments, SourceRange range = {})
-  : Expr(ASTNodeKind::CallExpr, range), callee(std::move(callee)), arguments(std::move(arguments)) {}
+ CallExpr(std::unique_ptr<Expr> calleeExpr, std::vector<std::unique_ptr<Expr>> callArguments, SourceRange range = {})
+  : Expr(ASTNodeKind::CallExpr, range), callee(std::move(calleeExpr)), arguments(std::move(callArguments)) {}
  std::unique_ptr<Expr> callee;
  std::vector<std::unique_ptr<Expr>> arguments;
 };
 class BinaryExpr final : public Expr {
 public:
- BinaryExpr(std::string operation, std::unique_ptr<Expr> left, std::unique_ptr<Expr> right, SourceRange range = {})
-  : Expr(ASTNodeKind::BinaryExpr, range), operation(std::move(operation)), left(std::move(left)), right(std::move(right)) {}
+ BinaryExpr(std::string operationName, std::unique_ptr<Expr> leftOperand, std::unique_ptr<Expr> rightOperand, SourceRange range = {})
+  : Expr(ASTNodeKind::BinaryExpr, range), operation(std::move(operationName)),
+    left(std::move(leftOperand)), right(std::move(rightOperand)) {}
  std::string operation;
  std::unique_ptr<Expr> left;
  std::unique_ptr<Expr> right;
