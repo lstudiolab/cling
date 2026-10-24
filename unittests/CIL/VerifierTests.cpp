@@ -2,6 +2,8 @@
 #include "cling/CIL/Verifier.h"
 #include <cstdlib>
 #include <iostream>
+#include <string>
+#include <utility>
 int main() {
     cling::cil::Module module;
     module.sourceName = "verifier-test.cling";
