@@ -1,0 +1,5 @@
+func main() {
+    let answer = 40 + 2;
+    print("Hello, Cling!");
+    print(answer);
+}
