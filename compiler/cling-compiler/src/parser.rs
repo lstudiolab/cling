@@ -146,8 +146,8 @@ impl Parser {
     fn binary_chain(&mut self, next: fn(&mut Self) -> Option<Expr>, operators: &[(TokenKind, BinaryOp)]) -> Option<Expr> {
         let mut expr = next(self)?;
         loop {
-            let matched = operators.iter().find(|(kind, _)| self.check(kind)).copied();
-            let Some((_, op)) = matched else { break; };
+            let matched = operators.iter().find(|(kind, _)| self.check(kind)).map(|(_, op)| *op);
+            let Some(op) = matched else { break; };
             self.advance();
             let right = next(self)?;
             let span = expr.span.join(right.span);
