@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string>
 int main() {
     const cling::SourceBuffer source("diagnostics.cling", "xy");
     cling::DiagnosticEngine diagnostics;
