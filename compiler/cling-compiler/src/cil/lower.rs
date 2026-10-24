@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use crate::ast::{BinaryOp, Expr, ExprKind, Function, Program, Stmt, UnaryOp};
 use super::instruction::{CilFunction, Instruction, Op};
 use super::module::Module;
