@@ -1,8 +1,10 @@
 pub mod ast;
 pub mod cil;
 pub mod diagnostic;
+#[path = "../../../lib/Parse/lexer/mod.rs"]
 pub mod lexer;
 pub mod native;
+#[path = "../../../lib/Parse/parser/mod.rs"]
 pub mod parser;
 pub mod sema;
 
