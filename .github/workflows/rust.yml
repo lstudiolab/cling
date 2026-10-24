@@ -1,7 +1,21 @@
-name: Rust CI
+name: Legacy Rust prototype CI
 on:
   push:
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - rust-toolchain.toml
+      - compiler/**
+      - tools/cling/Cargo.toml
+      - tools/cling/src/**
   pull_request:
+    paths:
+      - Cargo.toml
+      - Cargo.lock
+      - rust-toolchain.toml
+      - compiler/**
+      - tools/cling/Cargo.toml
+      - tools/cling/src/**
   workflow_dispatch:
 jobs:
   test:
@@ -17,6 +31,6 @@ jobs:
       - run: cargo clippy --workspace --all-targets
       - run: cargo run -p cling -- examples/hello.cling
       - run: cargo run -p cling -- --emit exe examples/control_flow.cling -o /tmp/cling-native-smoke
-      - run: test "$(/tmp/cling-native-smoke | head -n 1)" = "55"
+      - run: test "$( /tmp/cling-native-smoke | head -n 1 )" = "55"
       - name: native host executable smoke test
         run: cargo run -p cling -- --emit exe examples/hello.cling -o /tmp/cling-hello && /tmp/cling-hello
