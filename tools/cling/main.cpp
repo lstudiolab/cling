@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
  }
  std::ifstream input(parsed.options.input, std::ios::binary);
  if (!input) {
-  std::cerr << "error: cannot open source file '" << parsed.options.input.string() << "'\n';
+  std::cerr << "error: cannot open source file '" << parsed.options.input.string() << "'\\n";
   return 1;
  }
  const std::string contents((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
