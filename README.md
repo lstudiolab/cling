@@ -1,0 +1,89 @@
+# Cling
+
+Cling is an experimental programming language and compiler written in Rust. The repository follows a Rust Cargo workspace and separates compiler subsystems in the spirit of Swift's compiler organization.
+
+## Current executable implementation
+
+The compiler currently implements a working language subset with a lexer, recursive-descent parser, AST, semantic checks, CIL lowering, a CIL verifier, a CIL stack-machine interpreter, and a native host path that emits C and invokes Clang. Direct CLLM machine-code backends for x86-64, x86, ARM/AArch64, RISC-V and WebAssembly remain future implementation work; a target name is not treated as supported merely because it is recognized.
+
+### Build
+
+Install the stable Rust toolchain, then run from the repository root:
+
+```sh
+cargo test --workspace
+cargo build --workspace --release
+```
+
+### Run a program
+
+```sh
+cargo run -p cling -- examples/hello.cling
+cargo run -p cling -- examples/control_flow.cling
+```
+
+Expected output for `hello.cling`:
+
+```text
+Hello, World!
+```
+
+Expected output for `control_flow.cling`:
+
+```text
+55
+CIL execution succeeded
+```
+
+### Inspect compiler phases
+
+```sh
+cargo run -p cling -- --emit tokens examples/hello.cling
+cargo run -p cling -- --emit ast examples/hello.cling
+cargo run -p cling -- --emit cil examples/hello.cling
+```
+
+### Language subset
+
+```cling
+func sum(a: Int, b: Int) -> Int {
+    return a + b;
+}
+
+func main() {
+    let greeting: String = "Hello";
+    var count: Int = sum(20, 22);
+    print(greeting);
+    print(count);
+}
+```
+
+Supported so far: `func`, typed parameters and return values, `let`, `var`, assignments, `if`/`else`, `while`, `return`, nested blocks, `pass`, `Int`, `Bool`, `String`, function calls, `print`/`log`, integer arithmetic and comparisons, equality, boolean operators, comments (`//`) and escaped strings. Statements end in semicolons.
+
+## Architecture
+
+- `compiler/cling-compiler/src/lexer.rs`: tokens and source-aware lexical diagnostics.
+- `parser.rs`: recursive-descent parser and precedence-based expressions.
+- `ast.rs`: language syntax tree.
+- `sema.rs`: declaration checks, scopes, type checking, mutability and return validation.
+- `cil.rs`: CIL instruction model, AST lowering, structural verification, and executable VM.
+- `native.rs`: host C emission for native builds via Clang.
+- `tools/cling`: command-line driver.
+
+## CLLM portability plan
+
+CLLM must have an independently specified IR, verifier, optimization passes, target descriptions, ABI/calling-convention layer, instruction selector, register allocator, object writer, and linker integration. Each target will be marked supported only after real object-code emission and execution tests. WebAssembly is a distinct target architecture, not ARM or x86 assembly. Until those backends exist, the working target is the portable CIL VM on any platform that can build the Rust compiler.
+
+## Status
+
+Early compiler implementation; not production-ready. The CLI deliberately reports unsupported cross-target code generation instead of silently pretending to produce a native binary.
+
+## Native host builds
+
+Cling now has two execution paths:
+
+- `cling file.cling` checks the program, lowers it to CIL, verifies the CIL, and runs it in the CIL VM.
+- `cling --emit c file.cling` prints generated host C.
+- `cling --emit exe file.cling -o app` invokes an installed `clang` to compile a native host executable.
+
+The native backend is a real host-code path, but it is **not yet a standalone machine-code backend**: Cling emits C and Clang performs instruction selection, assembly, and linking. `--target` intentionally accepts only `host`; cross-architecture CLLM backends are not claimed as implemented.
