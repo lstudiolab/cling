@@ -6,7 +6,7 @@ The repository borrows the **organizational ideas** of the Swift compiler projec
 
 ## Current bootstrap status
 
-The active C++ bootstrap currently implements source buffers, source locations, shared diagnostics, token definitions, lexical analysis, and a token-inspection CLI. Parser, AST construction, semantic analysis, CIL lowering, optimization, and machine-code generation are planned stages and must not be described as working until implemented and tested.
+The active C++ bootstrap currently implements source buffers, source locations, shared diagnostics, token definitions, lexical analysis, and a token-inspection CLI. Parser, AST construction, semantic analysis, CIL lowering and execution, optimization, and machine-code generation are planned stages and must not be described as working until implemented and tested.
 
 The earlier Rust workspace remains in the repository as a prototype while the C++ bootstrap becomes the canonical implementation. Its presence does not mean that the C++ bootstrap already has feature parity.
 
