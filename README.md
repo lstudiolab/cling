@@ -70,9 +70,9 @@ For the initial bootstrap stage, `print` and `log` are temporary compiler-provid
 
 - `compiler/cling-compiler/src/lexer/`: token kinds, token spans, and scanner.
 - `ast/`: separate expression, statement, type, and program/declaration models.
-- `parser.rs`: recursive-descent parser and precedence-based expression parsing.
-- `sema.rs`: declaration checks, scopes, type checking, mutability, and return validation.
-- `cil/`: CIL instruction/value model, AST lowering, verification, and stack-machine execution.
+- `parser/`: recursive-descent parsing split into declaration, statement, and expression modules.
+- `sema/`: declaration checks and type analysis split into statement and expression checking.
+- `cil/`: instruction/value model, AST lowering, module verification, and stack-machine execution.
 - `native.rs`: host C emission and Clang-driven executable builds.
 - `diagnostic.rs`: source spans and structured diagnostics.
 - `tools/cling`: command-line driver.
