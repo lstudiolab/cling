@@ -60,6 +60,12 @@ func main() {
 
 Supported so far: `func`, typed parameters and return values, `let`, `var`, assignments, `if`/`else`, `while`, `return`, nested blocks, `pass`, `Int`, `Bool`, `String`, function calls, `print`/`log`, integer arithmetic and comparisons, equality, boolean operators, comments (`//`) and escaped strings. Statements end in semicolons.
 
+## Standard library direction
+
+Cling does not have a separately packaged standard or foundation library yet. The long-term rule is that Cling libraries are authored in Cling source and use the `.cling` extension, just like ordinary source files. We will not implement the foundation library in Rust or C.
+
+For the initial bootstrap stage, `print` and `log` are temporary compiler-provided intrinsics so programs can produce output before Cling has the language features and runtime interface needed to implement them in `.cling` source. They are not a separate library. Once the required interoperability/runtime mechanisms exist, the user-facing foundation APIs should move into Cling source, leaving only the minimum low-level host hooks as compiler/runtime intrinsics.
+
 ## Architecture
 
 - `compiler/cling-compiler/src/lexer.rs`: tokens and source-aware lexical diagnostics.
