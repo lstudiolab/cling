@@ -1,0 +1,16 @@
+[package]
+name = "cling"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "cling"
+path = "src/main.rs"
+
+[dependencies]
+cling-compiler = { path = "../../compiler/cling-compiler" }
+
+[lints]
+workspace = true

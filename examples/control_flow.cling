@@ -1,0 +1,19 @@
+func sum_to(limit: Int) -> Int {
+    var total: Int = 0;
+    var current: Int = 1;
+    while current <= limit {
+        total = total + current;
+        current = current + 1;
+    }
+    return total;
+}
+
+func main() {
+    let answer: Int = sum_to(10);
+    print(answer);
+    if answer == 55 {
+        print("CIL execution succeeded");
+    } else {
+        print("unexpected result");
+    }
+}
