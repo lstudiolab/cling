@@ -14,8 +14,8 @@ Cling is organized as a Rust Cargo workspace. The layout borrows the compiler-su
 Inside `compiler/cling-compiler/src/`:
 
 - `ast/` defines types, expressions, statements, functions, and programs.
-- `lexer/` defines tokens, token kinds, and the source scanner.
-- `parser/` separates declaration parsing, statement parsing, expression precedence, and shared parser state.
+- `lib/Parse/lexer/` defines tokens, token kinds, and the source scanner; the compiler crate imports this module through an explicit path.
+- `lib/Parse/parser/` separates declaration parsing, statement parsing, expression precedence, and shared parser state; the compiler crate imports this module through an explicit path.
 - `sema/` separates statement checking from expression type checking.
 - `cil/` contains the CIL model, lowering, module verification, values, and the stack-machine VM.
 - `diagnostic.rs` owns source spans and structured diagnostics.
