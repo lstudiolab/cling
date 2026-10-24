@@ -1,12 +1,14 @@
 #pragma once
 #include "cling/Basic/SourceLocation.h"
 #include <cstddef>
+#include <string_view>
 namespace cling {
 enum class ASTNodeKind {
  Program, FunctionDecl, ParameterDecl, VariableDecl, BlockStmt, IfStmt, WhileStmt,
  ReturnStmt, ExpressionStmt, IntegerExpr, StringExpr, BooleanExpr, NameExpr, CallExpr,
  UnaryExpr, BinaryExpr, AssignmentExpr
 };
+[[nodiscard]] std::string_view astNodeKindName(ASTNodeKind kind) noexcept;
 class ASTNode {
 public:
  explicit ASTNode(ASTNodeKind kind, SourceRange range = {}) noexcept : kind_(kind), range_(range) {}
