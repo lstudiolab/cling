@@ -68,9 +68,9 @@ For the initial bootstrap stage, `print` and `log` are temporary compiler-provid
 
 ## Architecture
 
-- `compiler/cling-compiler/src/lexer/`: token kinds, token spans, and scanner.
+- `lib/Parse/Lexer.rs`: token kinds, token spans, and scanner in one file, imported by the compiler crate.
 - `ast/`: separate expression, statement, type, and program/declaration models.
-- `parser/`: recursive-descent parsing split into declaration, statement, and expression modules.
+- `lib/Parse/Parser.rs`: recursive-descent parsing, including declarations, statements, expressions, and parser tests in one file, imported by the compiler crate.
 - `sema/`: declaration checks and type analysis split into statement and expression checking.
 - `cil/`: instruction/value model, AST lowering, module verification, and stack-machine execution.
 - `native.rs`: host C emission and Clang-driven executable builds.

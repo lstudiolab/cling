@@ -1,5 +1,52 @@
+// Cling lexer: token definitions, token kinds, scanner, and tests in one file.
 use crate::diagnostic::{Diagnostic, Span};
-use super::{Token, TokenKind};
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum TokenKind {
+    Identifier(String),
+    Integer(i64),
+    String(String),
+    Func,
+    Let,
+    Var,
+    If,
+    Else,
+    While,
+    Return,
+    True,
+    False,
+    Pass,
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Colon,
+    Comma,
+    Semicolon,
+    Arrow,
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Percent,
+    Bang,
+    Equal,
+    EqualEqual,
+    BangEqual,
+    Less,
+    LessEqual,
+    Greater,
+    GreaterEqual,
+    AndAnd,
+    OrOr,
+    Eof,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Token {
+    pub kind: TokenKind,
+    pub span: Span,
+}
 
 pub fn lex(source: &str) -> Result<Vec<Token>, Vec<Diagnostic>> {
     Lexer::new(source).run()
