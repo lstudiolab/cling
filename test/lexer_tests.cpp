@@ -37,7 +37,7 @@ int main() {
 
     for (const auto& token : tokens) {
         if (token.kind == TokenKind::Integer) {
-            sawInteger = token.integerValue == 42;
+            sawInteger = sawInteger || token.integerValue == 42;
         } else if (token.kind == TokenKind::String) {
             sawString = token.decodedString == "hello\nworld";
         } else if (token.kind == TokenKind::AndAnd) {
