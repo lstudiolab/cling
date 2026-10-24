@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(Cling VERSION 0.2.0 LANGUAGES CXX)
 
-option(CLING_BUILD_TESTS "Build Cling's C++ test suite" ON)
-option(CLING_ENABLE_WARNINGS_AS_ERRORS "Treat compiler warnings as errors" OFF)
+option(CLING_BUILD_TESTS "Build C++ tests" ON)
+option(CLING_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,6 +25,22 @@ add_library(ClingLex
 target_link_libraries(ClingLex PUBLIC ClingBasic)
 target_include_directories(ClingLex PUBLIC include)
 cling_set_warnings(ClingLex)
+
+add_library(ClingSema lib/Sema/Type.cpp)
+target_link_libraries(ClingSema PUBLIC ClingBasic)
+target_include_directories(ClingSema PUBLIC include)
+cling_set_warnings(ClingSema)
+
+add_library(ClingOptimizer lib/Optimizer/PassManager.cpp)
+target_include_directories(ClingOptimizer PUBLIC include)
+cling_set_warnings(ClingOptimizer)
+
+add_library(ClingCodeGen lib/CodeGen/TargetInfo.cpp)
+target_include_directories(ClingCodeGen PUBLIC include)
+cling_set_warnings(ClingCodeGen)
+
+add_library(ClingAST INTERFACE)
+target_include_directories(ClingAST INTERFACE include)
 
 add_executable(cling tools/cling/main.cpp)
 target_link_libraries(cling PRIVATE ClingLex ClingBasic)
