@@ -26,7 +26,7 @@ impl Parser {
         Some(Function { name, params, return_type, body, span: start.join(end) })
     }
 
-    fn type_name(&mut self, allow_void: bool) -> Option<TypeName> {
+    pub(super) fn type_name(&mut self, allow_void: bool) -> Option<TypeName> {
         let token = self.advance().clone();
         let ty = match token.kind {
             TokenKind::Identifier(ref name) if name == "Int" => Some(TypeName::Int),
@@ -39,7 +39,7 @@ impl Parser {
         ty
     }
 
-    fn identifier(&mut self, message: &str) -> Option<(String, Span)> {
+    pub(super) fn identifier(&mut self, message: &str) -> Option<(String, Span)> {
         let token = self.advance().clone();
         match token.kind { TokenKind::Identifier(name) => Some((name, token.span)), _ => { self.errors.push(Diagnostic::error(message, token.span)); None } }
     }
