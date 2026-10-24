@@ -29,3 +29,5 @@ Public names are re-exported through each module's `mod.rs`, so callers can use 
 Keep a file focused on one concept, and split larger modules along stable responsibilities rather than creating files that only forward calls. Shared data types belong near their defining subsystem. Tests should stay beside the behavior they exercise until a dedicated integration-test layout is needed.
 
 Cling libraries are intended to be written in Cling itself with the `.cling` extension. The foundation library is not implemented yet; don't introduce a replacement user-facing library in Rust or C.
+
+See [Swift Parse subsystem reference and Cling adaptation](SwiftParseReference.md) for the responsibilities of Swift's `lib/Parse` files and which concepts fit Cling's current language.
