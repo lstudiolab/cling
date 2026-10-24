@@ -1,14 +1,16 @@
 #pragma once
 
+#include "cling/AST/ASTNode.h"
+
+#include <cstddef>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace cling {
 
-class ASTNode;
-
-// Owns AST nodes for the lifetime of a single compilation unit. The context is intentionally
-// separate from parser state so later passes can retain stable node addresses.
+// Owns AST nodes for one compilation unit. It is separate from parser state so later passes
+// can retain stable node addresses without depending on the parser's lifetime.
 class ASTContext {
 public:
     ASTContext() = default;
@@ -17,7 +19,8 @@ public:
 
     template <typename T, typename... Args>
     T* make(Args&&... args) {
-        auto node = std::make_unique<T>(static_cast<Args&&>(args)...);
+        static_assert(std::is_base_of_v<ASTNode, T>, "ASTContext only owns AST nodes");
+        auto node = std::make_unique<T>(std::forward<Args>(args)...);
         T* raw = node.get();
         storage_.push_back(std::move(node));
         return raw;
