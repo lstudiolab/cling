@@ -1,0 +1,22 @@
+name: C++ CI
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build --parallel 2
+      - name: Unit and smoke tests
+        run: ctest --test-dir build --output-on-failure
+      - name: Interpreter smoke test
+        run: test "$(./build/cling examples/control_flow.cling | head -n 1)" = "55"
+      - name: Native executable smoke test
+        run: ./build/cling --emit exe examples/control_flow.cling -o /tmp/cling-native && test "$(/tmp/cling-native | head -n 1)" = "55"
+      - name: Hello-world native executable
+        run: ./build/cling --emit exe examples/hello.cling -o /tmp/cling-hello && /tmp/cling-hello
