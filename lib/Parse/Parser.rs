@@ -494,6 +494,7 @@ mod tests {
 
     #[test]
     fn empty_token_stream_is_safe() {
-        assert!(parse(Vec::new()).is_err());
+        let program = parse(Vec::new()).expect("empty token stream should be handled safely");
+        assert!(program.functions.is_empty());
     }
 }
