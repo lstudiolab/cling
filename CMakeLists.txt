@@ -54,6 +54,16 @@ if(CLING_BUILD_TESTS)
  cling_set_warnings(cling-lexer-tests)
  add_test(NAME ClingLexerTests COMMAND cling-lexer-tests)
 
+ add_executable(cling-source-location-tests unittests/Basic/SourceLocationTests.cpp)
+ target_link_libraries(cling-source-location-tests PRIVATE ClingBasic)
+ cling_set_warnings(cling-source-location-tests)
+ add_test(NAME ClingSourceLocationTests COMMAND cling-source-location-tests)
+
+ add_executable(cling-diagnostic-tests unittests/Basic/DiagnosticTests.cpp)
+ target_link_libraries(cling-diagnostic-tests PRIVATE ClingBasic)
+ cling_set_warnings(cling-diagnostic-tests)
+ add_test(NAME ClingDiagnosticTests COMMAND cling-diagnostic-tests)
+
  add_executable(cling-cil-verifier-tests unittests/CIL/VerifierTests.cpp)
  target_link_libraries(cling-cil-verifier-tests PRIVATE ClingCIL)
  cling_set_warnings(cling-cil-verifier-tests)
