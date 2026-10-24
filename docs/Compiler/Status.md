@@ -16,6 +16,6 @@
 - Native object-file writers, register allocation, ABI/calling-convention implementations, and direct machine-code backends for x86, x86-64, ARM, AArch64, RISC-V, or WebAssembly.
 - A production-quality optimizer, standard library/package manager, debugger, and complete Swift-like language features.
 
-## Verification note
+## Verification
 
-The project environment used to prepare this source bundle did not contain `rustc`, `cargo`, or `rustfmt`, and installing the Rust toolchain timed out. Therefore the Rust workspace could not be compiled or unit-tested in this environment. The CI workflow installs the stable Rust toolchain and Clang, runs formatting, unit tests, Clippy, the VM example, and a native executable smoke test. The C lowering strategy was separately sanity-checked by compiling representative generated-style C with Clang.
+GitHub Actions runs the stable Rust toolchain, formatting, workspace tests, Clippy, the VM example, and native executable smoke tests with Clang. Check the latest workflow result for the exact revision being reviewed; a previous successful run does not validate later changes.
