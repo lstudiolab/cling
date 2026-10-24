@@ -1,5 +1,7 @@
 #include "cling/CIL/Verifier.h"
 
+#include <utility>
+
 namespace cling::cil {
 
 std::vector<VerificationError> Verifier::verify(const Module& module) const {
