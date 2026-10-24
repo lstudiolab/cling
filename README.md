@@ -1,95 +1,76 @@
 # Cling
 
-Cling is an experimental programming language and compiler written in Rust. The repository follows a Rust Cargo workspace and separates compiler subsystems in the spirit of Swift's compiler organization.
+Cling is an experimental programming language. Its compiler is being organized as a staged C++20 bootstrap that will eventually compile a self-hosted compiler written in Cling itself.
 
-## Current executable implementation
+The repository borrows the **organizational ideas** of the Swift compiler project—subsystem-oriented source directories, matching headers, compiler tools, standard-library sources, documentation, and separate test layers. It does not copy Swift implementation code.
 
-The compiler currently implements a working language subset with a lexer, recursive-descent parser, AST, semantic checks, CIL lowering, a CIL verifier, a CIL stack-machine interpreter, and a native host path that emits C and invokes Clang. Direct CLLM machine-code backends for x86-64, x86, ARM/AArch64, RISC-V and WebAssembly remain future implementation work; a target name is not treated as supported merely because it is recognized.
+## Current bootstrap status
 
-### Build
+The active C++ bootstrap currently implements source buffers, source locations, shared diagnostics, token definitions, lexical analysis, and a token-inspection CLI. Parser, AST construction, semantic analysis, CIL lowering, optimization, and machine-code generation are planned stages and must not be described as working until implemented and tested.
 
-Install the stable Rust toolchain, then run from the repository root:
+The earlier Rust workspace remains in the repository as a prototype while the C++ bootstrap becomes the canonical implementation. Its presence does not mean that the C++ bootstrap already has feature parity.
 
-```sh
-cargo test --workspace
-cargo build --workspace --release
-```
+## Build the C++ bootstrap
 
-### Run a program
+Requirements: CMake 3.20 or newer and a C++20 compiler.
 
 ```sh
-cargo run -p cling -- examples/hello.cling
-cargo run -p cling -- examples/control_flow.cling
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build --parallel
+ctest --test-dir build --output-on-failure
 ```
 
-Expected output for `hello.cling`:
-
-```text
-Hello, World!
-```
-
-Expected output for `control_flow.cling`:
-
-```text
-55
-CIL execution succeeded
-```
-
-### Inspect compiler phases
+Inspect the token stream of a Cling source file:
 
 ```sh
-cargo run -p cling -- --emit tokens examples/hello.cling
-cargo run -p cling -- --emit ast examples/hello.cling
-cargo run -p cling -- --emit cil examples/hello.cling
+./build/cling --emit tokens examples/hello.cling
 ```
 
-### Language subset
+The CLI also supports `--help` and `--version`. Until the parser and later phases are ported, it explicitly reports that other compilation modes are not implemented.
 
-```cling
-func sum(a: Int, b: Int) -> Int {
-    return a + b;
-}
+## Language direction
 
-func main() {
-    let greeting: String = "Hello";
-    var count: Int = sum(20, 22);
-    print(greeting);
-    print(count);
-}
-```
+Cling's syntax and semantics will evolve independently. The repository currently contains prototype examples, which are not a promise that every example is accepted by the C++ bootstrap yet.
 
-Supported so far: `func`, typed parameters and return values, `let`, `var`, assignments, `if`/`else`, `while`, `return`, nested blocks, `pass`, `Int`, `Bool`, `String`, function calls, `print`/`log`, integer arithmetic and comparisons, equality, boolean operators, comments (`//`) and escaped strings. Statements end in semicolons.
+## Standard library policy
 
-## Standard library direction
+There is no foundation library yet. Future library modules must be written in Cling itself and use the `.cling` extension. Do not implement the user-facing foundation library in C, C++, or Rust.
 
-Cling does not have a separately packaged standard or foundation library yet. The long-term rule is that Cling libraries are authored in Cling source and use the `.cling` extension, just like ordinary source files. We will not implement the foundation library in Rust or C.
+During bootstrap, only documented compiler intrinsics may provide functionality that the language cannot yet express. `print` and `log` are intended to be temporary intrinsics, not a separate library. Replace them with Cling-written library APIs once the necessary runtime and interoperability mechanisms exist.
 
-For the initial bootstrap stage, `print` and `log` are temporary compiler-provided intrinsics so programs can produce output before Cling has the language features and runtime interface needed to implement them in `.cling` source. They are not a separate library. Once the required interoperability/runtime mechanisms exist, the user-facing foundation APIs should move into Cling source, leaving only the minimum low-level host hooks as compiler/runtime intrinsics.
+## Repository map
 
-## Architecture
+- `include/cling/`: interfaces grouped by compiler subsystem.
+- `lib/Basic/`: source buffers, source locations, diagnostics, and shared utilities.
+- `lib/Lex/`: tokens and lexical analysis.
+- `lib/Parse/`: parser implementation.
+- `lib/AST/`: syntax tree nodes and traversal.
+- `lib/Sema/`: name resolution, scopes, type checking, and semantic diagnostics.
+- `lib/CIL/`: Cling Intermediate Language, lowering, and verification.
+- `lib/Optimizer/`: optimization passes and pass management.
+- `lib/CodeGen/`: target descriptions and code generation.
+- `lib/Driver/`: command-line parsing and compilation orchestration.
+- `tools/cling/`: executable entry point.
+- `stdlib/public/`: reserved for future Cling-written `.cling` library sources.
+- `test/`: source-level regression fixtures organized by stage.
+- `unittests/`: isolated C++ unit tests.
+- `validation-test/`: end-to-end tests for supported language features.
+- `benchmark/`: reproducible performance experiments.
+- `docs/`: language and compiler architecture documentation.
+- `cmake/`: shared build configuration.
 
-- `compiler/cling-compiler/src/lexer.rs`: tokens and source-aware lexical diagnostics.
-- `parser.rs`: recursive-descent parser and precedence-based expressions.
-- `ast.rs`: language syntax tree.
-- `sema.rs`: declaration checks, scopes, type checking, mutability and return validation.
-- `cil.rs`: CIL instruction model, AST lowering, structural verification, and executable VM.
-- `native.rs`: host C emission for native builds via Clang.
-- `tools/cling`: command-line driver.
+Directories are added as their subsystem boundaries become useful; a directory or interface declaration alone is not evidence that a compiler phase is complete.
 
-## CLLM portability plan
+## Bootstrap and self-hosting roadmap
 
-CLLM must have an independently specified IR, verifier, optimization passes, target descriptions, ABI/calling-convention layer, instruction selector, register allocator, object writer, and linker integration. Each target will be marked supported only after real object-code emission and execution tests. WebAssembly is a distinct target architecture, not ARM or x86 assembly. Until those backends exist, the working target is the portable CIL VM on any platform that can build the Rust compiler.
+1. Finish and test the C++ source and lexer infrastructure.
+2. Implement the parser and AST.
+3. Add name resolution, semantic analysis, and type checking.
+4. Define and verify CIL, then implement lowering and execution.
+5. Add optimization passes and real code-generation backends.
+6. Use the bootstrap to compile compiler components written in Cling.
+7. Prove self-hosting with reproducible bootstrap builds and parity tests.
 
-## Status
+## Code quality
 
-Early compiler implementation; not production-ready. The CLI deliberately reports unsupported cross-target code generation instead of silently pretending to produce a native binary.
-
-## Native host builds
-
-Cling now has two execution paths:
-
-- `cling file.cling` checks the program, lowers it to CIL, verifies the CIL, and runs it in the CIL VM.
-- `cling --emit c file.cling` prints generated host C.
-- `cling --emit exe file.cling -o app` invokes an installed `clang` to compile a native host executable.
-
-The native backend is a real host-code path, but it is **not yet a standalone machine-code backend**: Cling emits C and Clang performs instruction selection, assembly, and linking. `--target` intentionally accepts only `host`; cross-architecture CLLM backends are not claimed as implemented.
+New compiler subsystems should have focused headers under `include/cling/<Subsystem>/`, implementations under `lib/<Subsystem>/`, unit tests under `unittests/<Subsystem>/`, and source-level regression fixtures under `test/<Subsystem>/`. Keep the command-line driver thin and diagnostics source-located. Do not claim an architecture is supported until the backend and its tests actually work.
