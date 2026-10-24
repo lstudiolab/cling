@@ -1,24 +1,29 @@
 # Contributing to Cling
 
-Cling is an experimental language with a C++20 bootstrap and a planned self-hosted compiler written in Cling.
+Cling is an experimental programming language and compiler maintained as a Rust Cargo workspace.
 
 ## Build and test
 
+Install the stable Rust toolchain and Clang, then run the checks from the repository root:
+
 ```sh
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
-cmake --build build --parallel
-ctest --test-dir build --output-on-failure
+cargo fmt --all -- --check
+cargo test --workspace
+cargo clippy --workspace --all-targets -- -D warnings
 ```
 
-## Organization
+Some tests build a native host executable through Clang, so Clang is required for the native backend tests.
 
-Place interfaces in `include/cling/<Subsystem>/` and implementations in the matching `lib/<Subsystem>/` directory. Keep the CLI thin. Shared diagnostics and source locations belong in Basic. Add focused unit tests under `unittests/<Subsystem>/` and source fixtures under `test/<Subsystem>/`.
+## Code organization
 
-## Quality requirements
+The compiler crate is under `compiler/cling-compiler`; the command-line driver is under `tools/cling`. Compiler phases currently use separate Rust modules for the AST, lexer, parser, semantic analysis, diagnostics, CIL, and native host emission.
 
-- Do not mark an incomplete phase as implemented.
-- Test valid input, invalid input, and boundary conditions.
-- Use source-located diagnostics for user errors.
-- Keep language semantics separate from host-specific code generation.
-- Do not implement the user-facing foundation library in C, C++, or Rust; future library APIs belong in `.cling` source.
-- Borrow repository organization from Swift without copying Swift source code.
+Keep source-language semantics separate from host-specific code generation. Put reusable logic in the compiler crate rather than duplicating it in the CLI. Preserve source spans in diagnostics and add regression tests for both valid and invalid programs.
+
+## Pull requests
+
+- Describe the behavior change and the relevant compiler phase.
+- Add or update unit tests and examples for user-visible behavior.
+- Do not claim a target or language feature is supported unless it works end to end.
+- Keep the foundation library policy intact: future user-facing library code belongs in `.cling` source, not in Rust or C.
+- Run formatting, tests, and lint checks before marking a change ready.

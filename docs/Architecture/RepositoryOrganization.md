@@ -1,30 +1,31 @@
 # Repository organization
 
-Cling borrows organizational ideas from the Swift compiler repository, not Swift implementation code. Compiler stages, interfaces, tools, library sources, documentation, and multiple test layers have separate homes.
+Cling is organized as a Rust Cargo workspace. The layout borrows the compiler-subsystem separation used by mature language projects, while keeping Cling's actual implementation and language-specific design independent.
 
-- `include/cling/`: subsystem interfaces.
-- `lib/Basic/`: source buffers, locations, diagnostics, and shared infrastructure.
-- `lib/Lex/`: token model and lexer.
-- `lib/Parse/`: parser implementation.
-- `lib/AST/`: AST node implementations and traversal.
-- `lib/Sema/`: declaration lookup, scopes, type checking, and diagnostics.
-- `lib/CIL/`: Cling Intermediate Language, lowering, verification, and execution.
-- `lib/Optimizer/`: optimization passes and pass management.
-- `lib/CodeGen/`: target descriptions, ABI rules, and code generation.
-- `lib/Driver/`: command-line options and compilation orchestration.
-- `tools/cling/`: executable entry point.
-- `stdlib/public/`: future Cling-written library modules, all using `.cling`.
-- `test/`: source-level regression fixtures.
-- `unittests/`: focused C++ tests.
-- `validation-test/`: end-to-end language validation.
-- `benchmark/`: reproducible performance measurements.
-- `docs/`: architecture and language documentation.
-- `cmake/`: reusable build settings.
+## Workspace
 
-## Bootstrap direction
+- `compiler/cling-compiler/` contains the reusable compiler library.
+- `tools/cling/` contains the command-line driver. It should coordinate compiler phases rather than duplicate their logic.
+- `examples/` contains runnable `.cling` programs used for documentation and integration checks.
+- `docs/Compiler/` describes the compiler pipeline and implementation status.
 
-The bootstrap compiler is C++20. The intended long-term compiler is written in Cling. This is a staged migration: the bootstrap compiles the first Cling-written compiler, and parity tests verify that the new compiler behaves correctly. The project is not yet self-hosted.
+## Compiler modules
 
-## Standard library policy
+Inside `compiler/cling-compiler/src/`:
 
-No foundation library is implemented yet. User-facing library modules must eventually be written in Cling source files with the `.cling` extension. Do not substitute a C, C++, or Rust foundation library. Temporary compiler intrinsics may provide only the low-level functionality that Cling cannot yet express.
+- `ast/` defines types, expressions, statements, functions, and programs.
+- `lexer/` defines tokens, token kinds, and the source scanner.
+- `parser/` separates declaration parsing, statement parsing, expression precedence, and shared parser state.
+- `sema/` separates statement checking from expression type checking.
+- `cil/` contains the CIL model, lowering, module verification, values, and the stack-machine VM.
+- `diagnostic.rs` owns source spans and structured diagnostics.
+- `native.rs` emits host C for Clang-driven executable builds.
+- `lib.rs` exposes the compiler phases and the top-level compilation entry point.
+
+Public names are re-exported through each module's `mod.rs`, so callers can use stable paths such as `crate::ast::Expr` without depending on the internal file layout.
+
+## Rules for new code
+
+Keep a file focused on one concept, and split larger modules along stable responsibilities rather than creating files that only forward calls. Shared data types belong near their defining subsystem. Tests should stay beside the behavior they exercise until a dedicated integration-test layout is needed.
+
+Cling libraries are intended to be written in Cling itself with the `.cling` extension. The foundation library is not implemented yet; don't introduce a replacement user-facing library in Rust or C.

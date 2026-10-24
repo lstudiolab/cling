@@ -1,3 +1,0 @@
-func main() {
-    print("this string is intentionally unterminated);
-}

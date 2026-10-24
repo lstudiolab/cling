@@ -1,16 +1,28 @@
 # Compilation pipeline
 
-Compiler stages are independent so they can be tested and evolved without coupling the command-line driver to implementation details.
+The executable Rust compiler currently follows this pipeline:
 
-1. Source management owns source buffers and maps byte offsets to line and column locations.
-2. Lexing converts source characters into tokens and emits source-located diagnostics.
-3. Parsing consumes tokens and builds syntax nodes.
-4. AST validation checks structural invariants before semantic analysis.
-5. Semantic analysis resolves declarations, scopes, types, mutability, and calls.
-6. CIL lowering converts validated AST nodes into an explicit intermediate representation.
-7. CIL verification checks operands, control-flow edges, local slots, and function boundaries.
-8. Optimization runs ordered, independently testable transformations.
-9. Code generation emits code only for targets with a real supported backend.
-10. The driver handles options, output paths, diagnostics, and orchestration.
+```text
+.cling source
+    -> lexer and token stream
+    -> parser and AST
+    -> semantic analysis
+    -> CIL lowering
+    -> CIL verification
+       |-> CIL stack-machine VM
+       `-> host C emission -> Clang -> native host executable
+```
 
-The C++ bootstrap currently implements source management and lexical analysis. Interfaces or directories for later phases do not imply that those phases are complete. Unsupported compiler modes must fail explicitly rather than pretend to produce output.
+## Front end
+
+The lexer tracks source spans and reports malformed tokens. The parser builds the AST using recursive-descent parsing and explicit operator-precedence levels. Semantic analysis resolves function and variable declarations, checks scopes and mutability, validates expressions and calls, and checks return types before lowering.
+
+## CIL
+
+CIL (Cling Intermediate Language) is a target-independent stack IR. Lowering turns validated AST nodes into instructions; the verifier checks the entry point, local slots, branch targets, and call targets/arity before the VM executes the module.
+
+The VM is the main development execution path. It handles arithmetic overflow, division errors, function calls, control flow, and expression values. The IR is kept separate from host-specific code generation to allow future backends without changing the front end.
+
+## Native host builds
+
+The current native path emits C for the host and asks Clang to compile and link it. This is a supported host executable path, not a direct machine-code emitter written in Cling. Standalone CLLM object emission and cross-target backends remain future work and must not be described as implemented until their code generation and tests exist.
