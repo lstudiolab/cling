@@ -1,28 +1,32 @@
 # Compiler pipeline
 
+The intended Cling pipeline is organized into independently testable stages:
+
 ```text
 .cling source
+    -> source management
     -> lexer
     -> parser / AST
     -> semantic analysis
     -> CIL generation
-    -> CIL structural verification
-       |-> CIL VM (default execution path)
-       `-> native C emission -> Clang -> host executable
+    -> CIL verification
+    -> optimization
+    -> target lowering / code generation
+    -> executable or other supported output
 ```
+
+## Current C++ bootstrap
+
+The C++20 bootstrap currently implements source management, diagnostics, lexing, token inspection, AST node data structures, type metadata, a preliminary CIL instruction model and verifier, target descriptions, pass-manager metadata, and driver option parsing.
+
+The CLI currently supports `--emit tokens`, `--help`, and `--version`. Parsing, AST construction, complete semantic analysis, CIL lowering/execution, optimization transforms, and native code generation are not yet connected into an end-to-end C++ compiler.
 
 ## CIL
 
-CIL (Cling Intermediate Language) is a target-independent executable IR. Its current form is a stack-based instruction stream with local slots, arithmetic, comparisons, branches, calls, and returns. The verifier checks entry-point presence, local-slot bounds, branch bounds, and call targets/arity before execution.
+CIL means Cling Intermediate Language. It is intended to be a target-independent intermediate representation between semantic analysis and code generation. Its design goals include explicit function boundaries, local slots, control flow, calls, verification before execution, and optimization passes that can be tested independently.
 
-## Native host backend
+The current C++ verifier checks local-slot bounds, branch-target bounds, call-index bounds, and empty functions. A complete instruction semantics specification, AST lowering, interpreter, and native backend remain future work.
 
-The native path lowers the semantically checked AST to C11-compatible host code (using Clang's GNU C extensions for inferred local declarations), then asks Clang to produce the host executable. This gives Cling a usable native executable path without pretending that direct x86-64/AArch64/RISC-V/WebAssembly machine-code emitters already exist. The long-term architecture keeps CIL target-independent and can insert CLLM, optimization passes, target lowering, and a direct machine-code emitter later without changing the language front end.
+## Legacy Rust prototype
 
-## Current executable paths
-
-- **CIL VM:** verifies the lowered stack IR, then executes it directly. This is the development/debugging path.
-- **Native host:** lowers the checked AST to C, then invokes Clang to compile that C into a host executable. The generated C includes typed helper functions for `print`, C string comparison for `String` equality, and a C `main` wrapper.
-- **Not yet implemented:** CLLM IR, direct machine-code emission, linker integration beyond Clang's driver, cross-target ABI lowering, and non-host target triples. The CLI rejects non-host targets rather than silently generating host code.
-
-Example: `cling --emit exe examples/control_flow.cling -o ./control-flow`. This writes `./control-flow.generated.c` and the executable `./control-flow`.
+The repository's earlier Rust prototype had a larger experimental pipeline, including a VM and host-C path. That prototype is retained temporarily during migration, but it is not the canonical bootstrap plan. Its current compiler errors are tracked separately from the C++ implementation.
